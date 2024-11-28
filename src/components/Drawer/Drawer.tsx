@@ -1,4 +1,4 @@
-import { cn } from "@/lib/classNames";
+import { cn } from '@/lib/classNames';
 import {
   createContext,
   PropsWithChildren,
@@ -7,13 +7,13 @@ import {
   useEffect,
   useImperativeHandle,
   useRef,
-  useState,
-} from "react";
-import ReactDOM from "react-dom";
-import { FaArrowLeft } from "react-icons/fa6";
-import { IoIosArrowForward } from "react-icons/io";
-import { Button } from "../Button";
-import styles from "./Drawer.module.scss";
+  useState
+} from 'react';
+import ReactDOM from 'react-dom';
+import { FaArrowLeft } from 'react-icons/fa6';
+import { IoIosArrowForward } from 'react-icons/io';
+import { Button } from '../Button';
+import styles from './Drawer.module.scss';
 
 export const TIMING = 300;
 
@@ -24,7 +24,7 @@ export interface ModalRef {
 export type ModalRefObject = RefObject<ModalRef>;
 
 const initialDrawerContext = {
-  close: () => new Promise<void>((resolve) => setTimeout(resolve, TIMING * 2)),
+  close: () => new Promise<void>(resolve => setTimeout(resolve, TIMING * 2))
 };
 
 const drawerContext = createContext(initialDrawerContext);
@@ -41,13 +41,13 @@ export function Drawer({
   busy,
   onClosed,
   onRequestClose,
-  position = "left",
-  ref,
+  position = 'left',
+  ref
 }: PropsWithChildren<{
   busy?: boolean;
   onClosed?: () => void;
   onRequestClose?: () => void;
-  position?: "left" | "right";
+  position?: 'left' | 'right';
   ref?: ModalRefObject;
 }>) {
   const [show, setShow] = useState(false);
@@ -59,7 +59,7 @@ export function Drawer({
 
   const handleClose = async () => {
     setShow(false);
-    await new Promise<void>((resolve) =>
+    await new Promise<void>(resolve =>
       setTimeout(() => {
         resolve();
         if (show) onClosed?.();
@@ -75,7 +75,7 @@ export function Drawer({
         close: async () => {
           onRequestClose?.();
           await handleClose();
-        },
+        }
       }}
     >
       <DrawerPortal>
@@ -89,7 +89,7 @@ export function Drawer({
                 }
           }
           className={cn(
-            "no-body-scroll",
+            'no-body-scroll',
             styles.drawerContainer,
             show && styles.showDrawer
           )}
@@ -97,13 +97,13 @@ export function Drawer({
           <div
             className={cn(
               styles.card,
-              position === "left"
+              position === 'left'
                 ? styles.left
-                : position === "right"
+                : position === 'right'
                   ? styles.right
                   : undefined
             )}
-            onClick={(event) => event.stopPropagation()}
+            onClick={event => event.stopPropagation()}
           >
             <div className={styles.cardExpansionsWrapper}>{children}</div>
           </div>
@@ -115,14 +115,14 @@ export function Drawer({
 
 Drawer.Content = ({
   children,
-  onClose,
+  onClose
 }: PropsWithChildren<{ onClose?: () => void }>) => {
   const [show, setShow] = useState(true);
 
   return (
     <div
       className={cn(
-        "hideScrollbar",
+        'hideScrollbar',
         styles.cardExpansion,
         show && styles.showContent
       )}
@@ -147,16 +147,14 @@ Drawer.Content = ({
 
 Drawer.CloseOnClick = ({
   children,
-  className,
-  onClick,
+  onClick
 }: PropsWithChildren<{
-  className?: string;
   onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }>) => {
   const context = useDrawerContext();
   return (
     <div
-      onClick={(event) => {
+      onClick={event => {
         context.close();
         onClick?.(event);
       }}
@@ -171,7 +169,7 @@ Drawer.Button = ({
   className,
   onClick,
   href,
-  showNav,
+  showNav
 }: PropsWithChildren<{
   className?: string;
   onClick?: () => any;
@@ -180,7 +178,7 @@ Drawer.Button = ({
 }>) => {
   return (
     <Button
-      className={cn("my-2 w-full font-bold", className)}
+      className={cn('my-2 w-full font-bold', className)}
       empty
       size="lg"
       onClick={onClick}
@@ -197,7 +195,7 @@ Drawer.Button = ({
 };
 
 function DrawerPortal({ children }: PropsWithChildren) {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     return null;
   }
 

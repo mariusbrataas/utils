@@ -106,7 +106,6 @@ export abstract class OrderedMap {
     if (!referenceItem) return null;
 
     let prevId: string | null = null;
-    let prevItem: T | null = null;
     let prevOrderValue = -Infinity;
 
     Object.keys(records).forEach(id => {
@@ -116,7 +115,6 @@ export abstract class OrderedMap {
         item.orderValue > prevOrderValue
       ) {
         prevId = id;
-        prevItem = item.state;
         prevOrderValue = item.orderValue;
       }
     });

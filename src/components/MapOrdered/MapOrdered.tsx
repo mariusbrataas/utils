@@ -1,26 +1,24 @@
-import { OrderedMap } from "@/lib/OrderedMap";
-import { Ordered } from "@/types";
-import type { StateLake } from "statelake";
+import { OrderedMap } from '@/lib/OrderedMap';
+import { Ordered } from '@/types';
+import type { StateLake } from 'statelake';
 
 const MappedItem = <T extends any, P extends any>({
   parentBranch,
   Component,
   id,
-  initialOrderValue,
   props,
-  idx,
+  idx
 }: {
   parentBranch: StateLake<Ordered<T>>;
   Component: (props: { branch: StateLake<T>; idx: number } & P) => JSX.Element;
-  props?: Omit<P, "branch" | "idx">;
+  props?: Omit<P, 'branch' | 'idx'>;
   id: string;
-  initialOrderValue: number;
   idx: number;
 }) => {
   const branch = parentBranch.useBranch(id);
   return (
     <Component
-      branch={branch.getBranch("state")}
+      branch={branch.getBranch('state')}
       idx={idx}
       {...(props as any)}
     />
@@ -30,11 +28,11 @@ const MappedItem = <T extends any, P extends any>({
 export const MapOrdered = <T extends any, P extends any>({
   branch,
   Component,
-  props,
+  props
 }: {
   branch: StateLake<Ordered<T>> | StateLake<Ordered<T> | undefined>;
   Component: (props: { branch: StateLake<T>; idx: number } & P) => JSX.Element;
-  props?: Omit<P, "branch" | "idx">;
+  props?: Omit<P, 'branch' | 'idx'>;
 }) => {
   const state = branch.use();
   return OrderedMap.keys(state ?? {}).map((key, idx) => (
@@ -43,7 +41,6 @@ export const MapOrdered = <T extends any, P extends any>({
       Component={Component}
       key={key}
       id={key}
-      initialOrderValue={branch.state![key].orderValue}
       props={props}
       idx={idx}
     />
@@ -52,12 +49,12 @@ export const MapOrdered = <T extends any, P extends any>({
 
 export const MapOrderedState = <T extends any>({
   state,
-  Component,
+  Component
 }: {
   state: Ordered<T>;
   Component: (props: { state: T }) => JSX.Element;
 }) => {
   const keys = OrderedMap.keys(state);
 
-  return keys.map((key) => <Component key={key} state={state[key].state} />);
+  return keys.map(key => <Component key={key} state={state[key].state} />);
 };
