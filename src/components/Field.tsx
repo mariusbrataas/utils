@@ -28,7 +28,7 @@ Field.Label = ({
     <label
       htmlFor={htmlFor}
       className={cn(
-        'mb-2 block whitespace-pre text-base font-medium text-black first-letter:capitalize dark:text-white',
+        'block select-none whitespace-pre text-base font-medium text-black first-letter:capitalize dark:text-white',
         className
       )}
     >
