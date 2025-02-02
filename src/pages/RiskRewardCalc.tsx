@@ -173,15 +173,11 @@ function Calculator() {
 export default function RiskRewardCalc() {
   return (
     <>
-      <main className="flex items-center justify-center bg-gradient-to-br from-red-100 to-sky-200 dark:bg-gradient-to-tl dark:from-slate-950 dark:to-indigo-950">
-        <div className="relative m-2 flex min-h-32 w-dvw min-w-32 flex-col gap-5 overflow-auto rounded-2xl bg-white p-7 text-center sm:w-fit sm:rounded-lg dark:bg-slate-800">
-          <div className="flex flex-row items-center justify-between">
-            <h2 className="text-left">Risk reward calc</h2>
-            <InfoButton />
-          </div>
-          <Calculator />
-        </div>
-      </main>
+      <div className="flex flex-row items-center justify-between">
+        <h2 className="text-left">Risk reward calc</h2>
+        <InfoButton />
+      </div>
+      <Calculator />
     </>
   );
 }

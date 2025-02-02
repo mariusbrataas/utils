@@ -87,3 +87,33 @@ svg {
   width: 100%;
   height: 100%;
 }
+
+.candle {
+  min-width: 5px;
+  height: 100%;
+
+  .candle-wick,
+  .candle-body,
+  .candle-spacing {
+    content: '';
+  }
+
+  .candle-wick {
+    width: 2px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  &.candle-bullish {
+    .candle-wick,
+    .candle-body {
+      background-color: green;
+    }
+  }
+  &.candle-bearish {
+    .candle-wick,
+    .candle-body {
+      background-color: red;
+    }
+  }
+}

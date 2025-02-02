@@ -30,14 +30,14 @@ export function Input<T extends 'text' | 'number' | 'password' | 'email'>({
 >) {
   return (
     <Field className="text-left" label={label} htmlFor={id}>
-      <div className="relative flex w-full cursor-default flex-row items-center rounded-md border-1 border-gray-200 bg-transparent px-3 outline-1 -outline-offset-1 outline-blue-600 transition-all focus-within:outline dark:border-slate-600 dark:outline-blue-500">
+      <div className="relative flex w-full cursor-default flex-row items-center rounded-md border-1 border-gray-200 bg-transparent px-3 outline-none transition-all focus-within:border-blue-500 dark:border-slate-600">
         {prefix ? (
           <span className="h-full w-fit pr-2 text-slate-600">{prefix}</span>
         ) : undefined}
         <input
           id={id}
           prefix="@"
-          className="w-full cursor-text rounded-md border-none bg-transparent py-2 outline-none transition-all autofill:appearance-none autofill:bg-red-600 autofill:fill-white focus:outline dark:border-slate-600 dark:outline-blue-500"
+          className="w-full cursor-text rounded-md border-none bg-transparent py-2 outline-none transition-all autofill:appearance-none autofill:bg-red-600 autofill:fill-white dark:border-slate-600"
           value={value}
           onChange={e =>
             (onChange as undefined | ((value: string | number) => void))?.(
