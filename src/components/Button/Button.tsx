@@ -1,11 +1,11 @@
-import { cn } from "@/lib/classNames";
+import { cn } from '@/lib/classNames';
 import {
   ButtonHTMLAttributes,
   PropsWithChildren,
   ReactNode,
-  useState,
-} from "react";
-import { Spinner } from "../Spinner";
+  useState
+} from 'react';
+import { Spinner } from '../Spinner';
 
 export function Button({
   children,
@@ -25,9 +25,11 @@ export function Button({
   disabled: disabledProp,
   busy: busyProp,
   href,
-  size = "md",
+  size = 'md',
 
-  type = "button",
+  type = 'button',
+
+  ...props
 }: PropsWithChildren<
   {
     className?: string;
@@ -38,11 +40,11 @@ export function Button({
     iconLeft?: ReactNode;
     iconRight?: ReactNode;
     href?: string;
-    size?: "sm" | "md" | "lg";
+    size?: 'sm' | 'md' | 'lg';
   } & Partial<
-    Record<"filled" | "gentle" | "outline" | "empty" | "text", boolean>
+    Record<'filled' | 'gentle' | 'outline' | 'empty' | 'text', boolean>
   > &
-    Pick<ButtonHTMLAttributes<HTMLButtonElement>, "type">
+    Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'type' | 'tabIndex'>
 >) {
   const [autoBusy, setAutoBusy] = useState(false);
 
@@ -51,8 +53,9 @@ export function Button({
 
   const content = (
     <button
+      {...props}
       type={type}
-      onClick={(event) => {
+      onClick={event => {
         const result = onClick?.(event) as any;
         if (result instanceof Promise) {
           setAutoBusy(true);
@@ -60,30 +63,30 @@ export function Button({
         }
       }}
       className={cn(
-        "relative w-fit whitespace-pre border text-center text-base transition-all",
+        'relative w-fit whitespace-pre border text-center text-base transition-all',
 
         {
-          sm: "text-sm",
-          md: "text-base",
-          lg: "text-xl",
+          sm: 'text-sm',
+          md: 'text-base',
+          lg: 'text-xl'
         }[size],
 
         (filled || gentle || outline) &&
-          { sm: "px-2 py-1", md: "px-4 py-2", lg: "px-6 py-3" }[size],
+          { sm: 'px-2 py-1', md: 'px-4 py-2', lg: 'px-6 py-3' }[size],
 
         filled &&
-          "border-transparent bg-slate-900 text-white hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 dark:bg-slate-700 dark:hover:bg-slate-600 [&:not(:disabled)]:shadow-lg",
+          'border-transparent bg-slate-900 text-white hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 dark:bg-slate-700 dark:hover:bg-slate-600 [&:not(:disabled)]:shadow-lg',
         gentle &&
-          "border-transparent text-inherit hover:bg-gray-500/10 disabled:pointer-events-none disabled:opacity-50 dark:bg-slate-700 dark:hover:bg-slate-600",
+          'border-transparent bg-slate-200 text-inherit hover:bg-gray-500/10 disabled:pointer-events-none disabled:opacity-50 dark:bg-slate-700 dark:hover:bg-slate-600',
         outline &&
-          "border-slate-300 text-slate-600 hover:border-slate-500 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none dark:border-slate-700 dark:text-white dark:hover:text-white",
-        empty && "border-transparent text-black",
+          'border-slate-300 text-slate-600 hover:border-slate-500 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none dark:border-slate-700 dark:text-white dark:hover:text-white',
+        empty && 'border-transparent text-black',
         text &&
-          "border-transparent font-medium text-blue-500 hover:text-slate-800 disabled:pointer-events-none disabled:opacity-50 dark:text-blue-400 dark:hover:text-blue-500",
+          'border-transparent font-medium text-blue-500 hover:text-slate-800 disabled:pointer-events-none disabled:opacity-50 dark:text-blue-400 dark:hover:text-blue-500',
 
-        pill ? "rounded-full" : "rounded-lg",
+        pill ? 'rounded-full' : 'rounded-lg',
 
-        busy ? "pr-8" : "",
+        busy ? 'pr-8' : '',
 
         className
       )}

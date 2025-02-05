@@ -105,7 +105,7 @@ export default function SecretGenerator() {
           min={0}
         />
       </div>
-      <div className="w-full whitespace-pre-wrap break-words rounded-md bg-slate-200 px-4 py-2 font-mono">
+      <div className="w-full whitespace-pre-wrap break-words rounded-md bg-slate-200 px-4 py-2 font-mono dark:bg-gray-700">
         {key}
       </div>
     </div>

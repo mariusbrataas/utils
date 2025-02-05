@@ -190,7 +190,7 @@ function Area({
   return (
     <div className="block">
       <div className="text-left">{label}</div>
-      <div className="relative rounded-md bg-slate-200 px-4 py-2">
+      <div className="relative rounded-md bg-slate-200 px-4 py-2 dark:bg-slate-600">
         <div className="rounded-mdfont-[inherit] h-full w-full min-w-0 overflow-visible whitespace-pre-wrap text-transparent">
           {content + (content.endsWith('\n') ? ' ' : '')}
         </div>

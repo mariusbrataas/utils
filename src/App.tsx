@@ -9,8 +9,8 @@ import SecretGenerator from './pages/SecretGenerator';
 
 function Main({ children }: PropsWithChildren) {
   return (
-    <main className="flex items-center justify-center bg-gradient-to-br from-red-100 to-sky-200 dark:bg-gradient-to-tl dark:from-slate-950 dark:to-indigo-950">
-      <div className="m-2 flex min-h-32 w-dvw min-w-32 max-w-[90vw] flex-col gap-5 overflow-hidden rounded-2xl bg-white p-7 text-center sm:w-fit sm:rounded-lg dark:bg-slate-800">
+    <main className="flex items-center justify-center bg-gradient-to-br from-red-100 to-sky-200 dark:bg-gradient-to-tl dark:from-gray-950 dark:to-gray-900">
+      <div className="m-2 flex min-h-32 w-dvw min-w-32 max-w-[95vw] flex-col gap-5 overflow-hidden rounded-2xl bg-white p-7 text-center sm:w-fit sm:rounded-lg dark:bg-slate-800 dark:text-white">
         <div className="flex w-full flex-col items-start justify-between gap-6">
           {children}
         </div>
@@ -33,7 +33,7 @@ function Nav() {
       return <CaesarCipherUI />;
     default:
       return (
-        <div className="flex max-w-screen-md flex-row flex-wrap gap-4 rounded-lg bg-white p-7">
+        <div className="flex max-w-screen-md flex-row flex-wrap gap-4">
           <Button href={`?t=rw`} filled>
             Risk-reward-calculator {'>'}
           </Button>

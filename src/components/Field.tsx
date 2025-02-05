@@ -12,7 +12,7 @@ export function Field({
   htmlFor?: string;
 }>) {
   return (
-    <fieldset className={className}>
+    <fieldset className={cn('m-0 block flex-1', className)}>
       {label ? <Field.Label htmlFor={htmlFor}>{label}</Field.Label> : undefined}
       {children}
     </fieldset>
@@ -28,7 +28,7 @@ Field.Label = ({
     <label
       htmlFor={htmlFor}
       className={cn(
-        'block select-none whitespace-pre text-base font-medium text-black first-letter:capitalize dark:text-white',
+        'm-0 block select-none whitespace-pre text-base font-medium text-black first-letter:capitalize dark:text-white',
         className
       )}
     >

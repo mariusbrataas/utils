@@ -26,9 +26,30 @@
     @apply text-3xl;
     @apply font-bold;
   }
+  h3 {
+    @apply text-xl;
+    @apply font-bold;
+  }
 
   p {
     @apply my-4;
+  }
+
+  table {
+    // @apply border-collapse;
+    // @apply border;
+    // @apply border-gray-400;
+    width: 100%;
+    // border-spacing: 5px;
+
+    th,
+    td {
+      @apply py-1;
+
+      &:not(:first-of-type) {
+        @apply pl-2;
+      }
+    }
   }
 }
 
@@ -116,4 +137,15 @@ svg {
       background-color: red;
     }
   }
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  /* display: none; <- Crashes Chrome on hover */
+  -webkit-appearance: none;
+  margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+input[type='number'] {
+  -moz-appearance: textfield; /* Firefox */
 }
