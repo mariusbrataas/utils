@@ -95,58 +95,6 @@ export function ActionsSummary({
                 </Strong>
               )
             }
-
-            // ...trailingStops
-            //   .filter(ts => ts?.triggerR)
-            //   .map((ts, idx) => ({
-            //     label: (
-            //       <>
-            //         Trailing stop <Strong>{idx + 1}</Strong>
-            //       </>
-            //     ),
-            //     content: (
-            //       <Pairs
-            //         data={[
-            //           {
-            //             label: <span>Trigger price</span>,
-            //             content: (
-            //               <Strong>
-            //                 <PrettyNumber
-            //                   value={entry + ts.lockR * (entry - stopLoss)}
-            //                   decimals={10}
-            //                   prefix="$"
-            //                 />
-            //               </Strong>
-            //             )
-            //           },
-            //           {
-            //             label: <span>Limit price</span>,
-            //             content: (
-            //               <Strong>
-            //                 <PrettyNumber
-            //                   value={entry + ts.lockR * (entry - stopLoss)}
-            //                   decimals={10}
-            //                   prefix="$"
-            //                 />
-            //               </Strong>
-            //             )
-            //           },
-            //           {
-            //             label: <span>Trigger price</span>,
-            //             content: (
-            //               <Strong>
-            //                 <PrettyNumber
-            //                   value={entry + ts.lockR * (entry - stopLoss)}
-            //                   decimals={10}
-            //                   prefix="$"
-            //                 />
-            //               </Strong>
-            //             )
-            //           }
-            //         ]}
-            //       />
-            //     )
-            //   }))
           ]}
         />
       </div>

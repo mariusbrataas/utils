@@ -39,15 +39,19 @@ export function Input<T extends 'text' | 'number' | 'password' | 'email'>({
   InputHTMLAttributes<HTMLInputElement>,
   'required' | 'id' | 'name' | 'pattern' | 'step' | 'min' | 'max'
 >) {
-  // Maintain an internal string state to allow in‑progress entries.
+  // Local state stores exactly what the user types.
   const [inputValue, setInputValue] = useState(
     value == null ? '' : value.toString()
   );
+  // Track whether the input is focused.
+  const [isFocused, setIsFocused] = useState(false);
 
-  // Update the internal state if the external value changes.
+  // When the parent’s value changes externally, update local state—but only when not editing.
   useEffect(() => {
-    setInputValue(value == null ? '' : value.toString());
-  }, [value]);
+    if (!isFocused) {
+      setInputValue(value == null ? '' : value.toString());
+    }
+  }, [value, isFocused]);
 
   // Destructure min, max, and step from the extra props.
   const { min, max, step } = props;
@@ -55,7 +59,6 @@ export function Input<T extends 'text' | 'number' | 'password' | 'email'>({
   // Helper: determine the number of decimal places from the step value.
   const getStepPrecision = (stepVal: number): number => {
     const stepStr = stepVal.toString();
-    // Handle scientific notation if needed.
     if (stepStr.indexOf('e-') >= 0) {
       const [, exp] = stepStr.split('e-');
       return Number(exp);
@@ -67,7 +70,8 @@ export function Input<T extends 'text' | 'number' | 'password' | 'email'>({
   /**
    * commitNumber
    *
-   * Adjusts a parsed numeric value to respect the provided min, max, and step.
+   * Adjusts a parsed numeric value to respect min, max, and step,
+   * and rounds to the proper precision.
    */
   const commitNumber = (n: number): number => {
     let committed = n;
@@ -97,9 +101,7 @@ export function Input<T extends 'text' | 'number' | 'password' | 'email'>({
             base = minVal;
           }
         }
-        // Do the snapping calculation.
         committed = Math.round((committed - base) / stepVal) * stepVal + base;
-        // Fix floating point issues by rounding to the proper precision.
         const precision = getStepPrecision(stepVal);
         committed = Number(committed.toFixed(precision));
       }
@@ -111,57 +113,54 @@ export function Input<T extends 'text' | 'number' | 'password' | 'email'>({
    * isCompleteNumber
    *
    * Returns true only if the input string represents a “complete” number.
-   * For example, while "-0" is mathematically valid, we consider it incomplete so
-   * that a user can continue typing a negative decimal.
+   * (For example, "-0" is treated as incomplete so the user can keep typing.)
    */
   const isCompleteNumber = (s: string): boolean => {
-    // Must match a pattern with at least one digit before (and if applicable after) a dot.
     if (!/^-?\d+(\.\d+)?$/.test(s)) return false;
-    // Treat a lone "-0" as incomplete.
     if (s === '-0') return false;
-    // Also, if it begins with "-0" but the third character isn’t a dot (e.g. "-01"),
-    // consider it incomplete.
     if (s.startsWith('-0') && s.length > 2 && s[2] !== '.') return false;
     return true;
   };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-
     if (type === 'number') {
       // Allow only characters that could eventually form a valid number.
       if (/^-?\d*\.?\d*$/.test(newValue)) {
         setInputValue(newValue);
 
-        // If we have a complete number, parse and "commit" it with constraints.
+        // If the string is a complete number, parse it.
         if (isCompleteNumber(newValue)) {
           const parsed = parseFloat(newValue);
           const committed = commitNumber(parsed);
-          onChange?.(committed as never);
+          // Only update parent's onChange if the string is already in canonical form.
+          if (newValue === committed.toString()) {
+            onChange?.(committed as never);
+          } else {
+            // Otherwise, do not call onChange yet.
+            onChange?.(undefined as never);
+          }
         } else {
-          // For incomplete numbers (like "", "-", or "-0"), signal no valid number.
+          // For incomplete numbers (like "", "-" or "-0"), signal no valid number.
           onChange?.(undefined as never);
         }
       }
     } else {
-      // For non-number types, just update and pass along the raw value.
       setInputValue(newValue);
       onChange && onChange(newValue as never);
     }
   };
 
   const handleBlur = () => {
+    setIsFocused(false);
     if (type === 'number') {
       if (isCompleteNumber(inputValue)) {
         const parsed = parseFloat(inputValue);
         const committed = commitNumber(parsed);
-        // If committing changes the value (e.g. snapping or clamping), update the display.
-        if (committed.toString() !== inputValue) {
-          setInputValue(committed.toString());
-        }
+        // On blur we always commit (and reformat to canonical form)
+        setInputValue(committed.toString());
         onChange?.(committed as never);
       } else {
-        // Clear the input on blur if the value is incomplete.
         setInputValue('');
         onChange?.(undefined as never);
       }
@@ -186,6 +185,7 @@ export function Input<T extends 'text' | 'number' | 'password' | 'email'>({
           className="w-full cursor-text rounded-md border-none bg-transparent py-2 outline-none transition-all autofill:appearance-none autofill:bg-red-600 autofill:fill-white dark:border-slate-600"
           value={inputValue}
           onChange={handleChange}
+          onFocus={() => setIsFocused(true)}
           onBlur={handleBlur}
           placeholder={placeholder == null ? undefined : `${placeholder}`}
           autoFocus={autofocus}

@@ -25,6 +25,31 @@ function riskEmoji(risk: number) {
   return '☠️';
 }
 
+// function NumberInput({
+//   value,
+//   onChange
+// }: {
+//   value?: number;
+//   onChange?: (nextValue: number) => void;
+// }) {
+//   const [inputValue, setInputValue] = useState<string>(
+//     value == null ? '' : value.toString()
+//   );
+
+//   return (
+//     <div>
+//       <input
+//         type="number"
+//         value={inputValue}
+//         onChange={e => {
+//           const nextValue = e.target.value;
+//           if (nextValue.startsWith())
+//         }}
+//       />
+//     </div>
+//   );
+// }
+
 export default function PositionSizing() {
   const [entryState, setEntry] = useSearchParam<number>('entry');
   const [takeProfitState, setTakeProfit] = useSearchParam<number>('tp');
@@ -48,26 +73,41 @@ export default function PositionSizing() {
   const stopLoss = stopLossState ?? DEFAULT_VALUES.stopLoss;
   const capital = capitalState ?? DEFAULT_VALUES.capital;
   const risk = riskState ?? DEFAULT_VALUES.risk;
+  const effectiveMaxLeverage = maxLeverage ?? DEFAULT_VALUES.maxLeverage;
 
   const isValid =
     (stopLoss < entry && entry < takeProfit) ||
     (stopLoss > entry && entry > takeProfit);
   const isShort = entry < stopLoss;
 
+  // The risk unit is the absolute difference between entry and stop-loss
   const riskUnit = Math.abs(entry - stopLoss);
 
-  let positionSize = risk / riskUnit;
+  // Calculate the position size based on the user-specified risk
+  const computedPositionSize = risk / riskUnit;
+  // Maximum allowed position size based on the max leverage limit
+  const maxAllowedPositionSize = (capital * effectiveMaxLeverage) / entry;
+  // Whether the leverage limit is forcing a lower position size
+  const leverageLimitsRisk = computedPositionSize > maxAllowedPositionSize;
+
+  // Use the smaller of the two position sizes
+  let positionSize = Math.min(computedPositionSize, maxAllowedPositionSize);
   if (discrete) positionSize = Math.floor(positionSize);
 
+  // Compute the actual risk (dollar amount actually risked)
+  const actualRisk = positionSize * riskUnit;
+  // Calculate position value (for leverage display purposes)
   const positionValue = entry * positionSize;
   const requiredLeverage = Math.min(
-    maxLeverage ?? DEFAULT_VALUES.maxLeverage,
+    effectiveMaxLeverage,
     Math.max(1, Math.ceil(Math.abs(positionValue / capital)))
   );
 
+  // Calculate potential win in dollars
   const potentialWin = Math.abs(positionSize * (takeProfit - entry));
-
-  const riskRewardRatio = potentialWin / risk;
+  // The risk/reward ratio is computed using the actual risk, not the user input
+  // const riskRewardRatio = potentialWin / actualRisk;
+  const riskRewardRatio = Math.abs(takeProfit - entry) / riskUnit;
 
   return (
     <div className="flex w-[600px] max-w-full flex-col items-start justify-between gap-7 text-left">
@@ -135,7 +175,10 @@ export default function PositionSizing() {
               placeholder={DEFAULT_VALUES.takeProfit}
               value={takeProfitState}
               onChange={setTakeProfit}
-              status={`Price change ≈ ${round(Math.abs(((takeProfit - entry) / entry) * 100), 2)}%`}
+              status={`Price change ≈ ${round(
+                Math.abs(((takeProfit - entry) / entry) * 100),
+                2
+              )}%`}
               min={0}
               max={100e6}
             />
@@ -146,7 +189,7 @@ export default function PositionSizing() {
               placeholder={DEFAULT_VALUES.maxLeverage}
               value={maxLeverage}
               onChange={setMaxLeverage}
-              min={0}
+              min={1}
               step={0.1}
             />
           </div>
@@ -155,14 +198,35 @@ export default function PositionSizing() {
 
       <div className="mx-auto rounded-2xl bg-gradient-to-tl from-gray-100 to-zinc-200 px-6 py-4 text-center dark:bg-gradient-to-tl dark:from-slate-600 dark:to-slate-700">
         {isValid ? (
-          <div className="text-xl">
-            <div>{`${formatNumber(potentialWin / risk, 1)}R ${riskEmoji(riskRewardRatio)}`}</div>
-            <div>
-              Potential profit =
-              <Strong>
-                <PrettyNumber value={potentialWin} prefix="$" />
-              </Strong>
+          <div className="flex flex-col gap-3">
+            <div className="text-xl">
+              <div>{`${formatNumber(
+                riskRewardRatio,
+                1
+              )}R ${riskEmoji(riskRewardRatio)}`}</div>
+              <div>
+                Potential profit ={' '}
+                <Strong>
+                  <PrettyNumber value={potentialWin} prefix="$" />
+                </Strong>
+              </div>
             </div>
+            {leverageLimitsRisk && (
+              <div>
+                <em>
+                  Note: Due to the <Strong>max leverage limit</Strong>, you are
+                  effectively risking{' '}
+                  <Strong>
+                    <PrettyNumber value={actualRisk} prefix="$" />
+                  </Strong>{' '}
+                  instead of your full risk amount of{' '}
+                  <Strong>
+                    <PrettyNumber value={risk} prefix="$" />
+                  </Strong>
+                  .
+                </em>
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-lg">Check your numbers</div>
@@ -346,11 +410,11 @@ export default function PositionSizing() {
         <p>
           For example: Lock <Strong>2R</Strong> worth of profit when the price
           goes beyond <Strong>3R</Strong>.<br />
-          With the current settings, this would ensure a minimum profit of
+          With the current settings, this would ensure a minimum profit of{' '}
           <Strong>
             <PrettyNumber prefix="$" value={2 * risk} />
-          </Strong>
-          once the price {isShort ? 'falls below' : 'rises above'}
+          </Strong>{' '}
+          once the price {isShort ? 'falls below' : 'rises above'}{' '}
           <Strong>
             <PrettyNumber
               value={entry + riskUnit * 2 * (isShort ? -1 : 1)}
@@ -367,10 +431,10 @@ export default function PositionSizing() {
         <p>
           <Strong>Hint:</Strong>
           <br /> Add a trailing stop with <Strong>lock</Strong> set to{' '}
-          <Strong>0R</Strong> to reduce risk to
+          <Strong>0R</Strong> to reduce risk to{' '}
           <Strong>
             <PrettyNumber value={0} prefix="$" />
-          </Strong>
+          </Strong>{' '}
           once the price reaches your <Strong>trigger</Strong>.
         </p>
       </div>
