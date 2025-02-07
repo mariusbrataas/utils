@@ -17,6 +17,9 @@ const DEFAULT_VALUES = {
   maxLeverage: 100
 };
 
+/**
+ * Returns an emoji based on the given risk/reward ratio.
+ */
 function riskEmoji(risk: number) {
   if (risk > 10) return '🤑';
   if (risk > 7) return '🚀';
@@ -28,20 +31,19 @@ function riskEmoji(risk: number) {
 }
 
 export default function PositionSizing() {
+  /**
+   * Input states, kept in the URL search parameters
+   */
   const [entryState, setEntry] = useSearchParam<number>('entry');
   const [takeProfitState, setTakeProfit] = useSearchParam<number>('tp');
   const [stopLossState, setStopLoss] = useSearchParam<number>('sl');
-
   const [capitalState, setCapital] = useSearchParam<number>('capital');
   const [discrete, setDiscrete] = useSearchParam<boolean>('discrete');
-
   const [riskState, setRisk] = useSearchParam<number>('ra');
   const [riskIsPercent, setRiskIsPercent] = useSearchParam<boolean | undefined>(
     'rp'
   );
-
   const [maxLeverage, setMaxLeverage] = useSearchParam<number>('ml');
-
   const [trailingStops, setTrailingStops] = useSearchParam<
     [triggerR: number, lockR: number][]
   >('ts', [
@@ -49,12 +51,23 @@ export default function PositionSizing() {
     [4, 1]
   ]);
 
+  /**
+   * Fallback to default values if state is undefined.
+   */
   const entry = entryState ?? DEFAULT_VALUES.entry;
   const takeProfit = takeProfitState ?? DEFAULT_VALUES.takeProfit;
   const stopLoss = stopLossState ?? DEFAULT_VALUES.stopLoss;
   const capital = capitalState ?? DEFAULT_VALUES.capital;
   const effectiveMaxLeverage = maxLeverage ?? DEFAULT_VALUES.maxLeverage;
 
+  const isValid =
+    (stopLoss < entry && entry < takeProfit) ||
+    (stopLoss > entry && entry > takeProfit);
+  const isShort = entry < stopLoss;
+
+  /**
+   * Risk calculations
+   */
   const riskAmount = riskIsPercent
     ? capital *
       ((riskState == null ? DEFAULT_VALUES.riskPercent : riskState) / 100)
@@ -62,38 +75,30 @@ export default function PositionSizing() {
       ? DEFAULT_VALUES.risk
       : riskState;
   const riskPercent = (riskAmount / capital) * 100;
-
-  const isValid =
-    (stopLoss < entry && entry < takeProfit) ||
-    (stopLoss > entry && entry > takeProfit);
-  const isShort = entry < stopLoss;
-
-  // The risk unit is the absolute difference between entry and stop-loss
   const riskUnit = Math.abs(entry - stopLoss);
 
-  // Calculate the position size based on the user-specified risk
+  /**
+   * Position sizing calculations
+   */
   const computedPositionSize = riskAmount / riskUnit;
-  // Maximum allowed position size based on the max leverage limit
   const maxAllowedPositionSize = (capital * effectiveMaxLeverage) / entry;
-  // Whether the leverage limit is forcing a lower position size
   const leverageLimitsRisk = computedPositionSize > maxAllowedPositionSize;
 
-  // Use the smaller of the two position sizes
   let positionSize = Math.min(computedPositionSize, maxAllowedPositionSize);
   if (discrete) positionSize = Math.floor(positionSize);
 
-  // Compute the actual risk (dollar amount actually risked)
   const actualRisk = positionSize * riskUnit;
-  // Calculate position value (for leverage display purposes)
   const positionValue = entry * positionSize;
 
-  // Calculate potential win in dollars
+  /**
+   * Profit and reward calculations
+   */
   const potentialWin = Math.abs(positionSize * (takeProfit - entry));
-  // The risk/reward ratio is computed using the actual risk, not the user input
-  // const riskRewardRatio = potentialWin / actualRisk;
   const riskRewardRatio = Math.abs(takeProfit - entry) / riskUnit;
 
-  // Calculate the unleveraged position size and value:
+  /**
+   * Unleveraged position calculations
+   */
   const unleveragedSize = Math.min(computedPositionSize, capital / entry);
   const unleveragedValue = unleveragedSize * entry;
 
@@ -101,7 +106,9 @@ export default function PositionSizing() {
     <div className="flex w-[600px] max-w-full flex-col items-start justify-between gap-7 text-left">
       <h2>Position sizing</h2>
 
+      {/* Input Section */}
       <div className="flex w-full flex-col gap-4">
+        {/* Capital and Risk Inputs */}
         <div className="flex flex-col gap-2">
           <div className="flex flex-row flex-wrap gap-2">
             <Input
@@ -141,9 +148,9 @@ export default function PositionSizing() {
                       </Button>
                       <Button
                         size="sm"
-                        {...(riskIsPercent
-                          ? { filled: true }
-                          : { outline: true })}
+                        {...(!riskIsPercent
+                          ? { outline: true }
+                          : { filled: true })}
                         onClick={() => {
                           if (!riskIsPercent) {
                             setRiskIsPercent(true);
@@ -174,6 +181,7 @@ export default function PositionSizing() {
           </div>
         </div>
 
+        {/* Price Inputs */}
         <div className="flex flex-col gap-4">
           <div className="flex flex-row flex-wrap gap-2">
             <Input
@@ -205,10 +213,7 @@ export default function PositionSizing() {
               placeholder={DEFAULT_VALUES.takeProfit}
               value={takeProfitState}
               onChange={setTakeProfit}
-              status={`Price change ≈ ${round(
-                Math.abs(((takeProfit - entry) / entry) * 100),
-                2
-              )}%`}
+              status={`Price change ≈ ${round(Math.abs(((takeProfit - entry) / entry) * 100), 2)}%`}
               min={0}
               max={100e6}
             />
@@ -232,14 +237,12 @@ export default function PositionSizing() {
         </div>
       </div>
 
+      {/* Summary Section */}
       <div className="mx-auto rounded-2xl bg-gradient-to-tl from-gray-100 to-zinc-200 px-6 py-4 text-center dark:bg-gradient-to-tl dark:from-slate-600 dark:to-slate-700">
         {isValid ? (
           <div className="flex flex-col gap-3">
             <div className="text-xl">
-              <div>{`${formatNumber(
-                riskRewardRatio,
-                1
-              )}R ${riskEmoji(riskRewardRatio)}`}</div>
+              <div>{`${formatNumber(riskRewardRatio, 1)}R ${riskEmoji(riskRewardRatio)}`}</div>
               <div>
                 Potential profit ={' '}
                 <Strong>
@@ -269,9 +272,9 @@ export default function PositionSizing() {
         )}
       </div>
 
+      {/* Order Summary Section */}
       <div className="w-full">
         <h3>Order summary</h3>
-
         <div className="min-w-full overflow-auto" tabIndex={-1}>
           <Pairs
             divide
@@ -293,13 +296,13 @@ export default function PositionSizing() {
                 content: (
                   <>
                     <div>
-                      Size
+                      Size:{' '}
                       <Strong>
                         <PrettyNumber value={positionSize} />
                       </Strong>
                     </div>
                     <div>
-                      Value
+                      Value:{' '}
                       <Strong>
                         <PrettyNumber value={positionValue} prefix="$" />
                       </Strong>
@@ -312,13 +315,13 @@ export default function PositionSizing() {
                 content: (
                   <>
                     <div>
-                      Size
+                      Size:{' '}
                       <Strong>
                         <PrettyNumber value={unleveragedSize} />
                       </Strong>
                     </div>
                     <div>
-                      Value
+                      Value:{' '}
                       <Strong>
                         <PrettyNumber value={unleveragedValue} prefix="$" />
                       </Strong>
@@ -331,14 +334,13 @@ export default function PositionSizing() {
         </div>
       </div>
 
+      {/* Trailing Stops Section */}
       <div>
         <h3>Trailing stops</h3>
-
         <p>
           You can lock partial profits when the price changes beyond a given
           amount of risk units.
         </p>
-
         {trailingStops.length ? (
           <table>
             <thead>
@@ -348,8 +350,8 @@ export default function PositionSizing() {
               </tr>
             </thead>
             {trailingStops.map(([triggerR, lockR], idx) => (
-              <>
-                <tr key={idx}>
+              <tbody key={idx}>
+                <tr>
                   <td className="w-1/2">
                     <Input
                       id={`trailing-stop-trigger-${idx}`}
@@ -358,6 +360,7 @@ export default function PositionSizing() {
                       suffix="R"
                       value={triggerR}
                       onChange={newTriggerR => {
+                        // Update trigger; ensure lockR does not exceed triggerR.
                         trailingStops[idx] = [
                           newTriggerR!,
                           newTriggerR ? Math.min(newTriggerR, lockR) : lockR
@@ -376,6 +379,7 @@ export default function PositionSizing() {
                       suffix="R"
                       value={lockR}
                       onChange={newLockR => {
+                        // Update lock; ensure lockR is at least triggerR.
                         trailingStops[idx] = [
                           newLockR ? Math.max(triggerR, newLockR) : triggerR,
                           newLockR!
@@ -468,14 +472,14 @@ export default function PositionSizing() {
                     </div>
                   </td>
                 </tr>
-              </>
+              </tbody>
             ))}
           </table>
         ) : undefined}
-
         <Button
           filled
           onClick={() => {
+            // Compute new trailing stop defaults based on existing stops and riskRewardRatio.
             const triggerR = Math.min(
               Math.floor(riskRewardRatio * 10) / 10,
               Math.max(0, ...trailingStops.map(ts => ts[0])) + 1
@@ -492,15 +496,14 @@ export default function PositionSizing() {
         >
           Add trailing stop
         </Button>
-
         <p>
           For example: Lock <Strong>2R</Strong> worth of profit when the price
           goes beyond <Strong>3R</Strong>.<br />
-          With the current settings, this would ensure a minimum profit of
+          With the current settings, this would ensure a minimum profit of{' '}
           <Strong>
             <PrettyNumber prefix="$" value={2 * riskAmount} />
-          </Strong>
-          once the price {isShort ? 'falls below' : 'rises above'}
+          </Strong>{' '}
+          once the price {isShort ? 'falls below' : 'rises above'}{' '}
           <Strong>
             <PrettyNumber
               value={entry + riskUnit * 2 * (isShort ? -1 : 1)}
@@ -518,10 +521,10 @@ export default function PositionSizing() {
           <Strong>Hint:</Strong>
           <br />
           Add a trailing stop with <Strong>lock</Strong> set to{' '}
-          <Strong>0R</Strong> to reduce risk to
+          <Strong>0R</Strong> to reduce risk to{' '}
           <Strong>
             <PrettyNumber value={0} prefix="$" />
-          </Strong>
+          </Strong>{' '}
           once the price reaches your <Strong>trigger</Strong>.
         </p>
       </div>
