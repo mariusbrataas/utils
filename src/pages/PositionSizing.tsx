@@ -6,6 +6,7 @@ import { PopoverButton } from '@/components/PopoverButton';
 import { Input } from '@/components/Textfield';
 import { useSearchParam } from '@/hooks/useSearchParameter';
 import { round } from '@/lib/utils';
+import { IoMdTrash } from 'react-icons/io';
 
 const DEFAULT_VALUES = {
   entry: 2.8249,
@@ -403,7 +404,9 @@ export default function PositionSizing() {
                           )
                         }
                       >
-                        Remove
+                        <div className="h-6 w-6 p-0.5">
+                          <IoMdTrash />
+                        </div>
                       </Button>
                     </div>
                   </td>
