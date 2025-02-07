@@ -77,7 +77,7 @@ export function Button({
         filled &&
           'border-transparent bg-slate-900 text-white hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50 dark:bg-slate-700 dark:hover:bg-slate-600 [&:not(:disabled)]:shadow-lg',
         gentle &&
-          'border-transparent bg-slate-200 text-inherit hover:bg-gray-500/10 disabled:pointer-events-none disabled:opacity-50 dark:bg-slate-700 dark:hover:bg-slate-600',
+          'border-transparent bg-slate-200 text-inherit hover:bg-gray-600/10 disabled:pointer-events-none disabled:opacity-50 dark:bg-slate-700 dark:hover:bg-slate-600',
         outline &&
           'border-slate-300 text-slate-600 hover:border-slate-500 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none dark:border-slate-700 dark:text-white dark:hover:text-white',
         empty && 'border-transparent text-black',

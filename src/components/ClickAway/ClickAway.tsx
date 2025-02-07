@@ -1,17 +1,17 @@
-import { useClickAway } from "@/hooks/useClickAway";
+import { useClickAway } from '@/hooks/useClickAway';
 import {
   CSSProperties,
   MouseEventHandler,
   PropsWithChildren,
-  useRef,
-} from "react";
+  useRef
+} from 'react';
 
 export function ClickAway({
   children,
   className,
   onClickOutside,
   style,
-  onClick,
+  onClick
 }: PropsWithChildren<{
   className?: string;
   onClickOutside?: (event: MouseEvent | TouchEvent) => void;
