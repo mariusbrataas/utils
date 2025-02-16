@@ -1,6 +1,7 @@
 import { cn } from '@/lib/classNames';
 import { round } from '@/lib/utils';
 import { useEffect, useState } from 'react';
+import { Strong } from './Helpers';
 
 export function formatNumber(value: number, decimals?: number) {
   return (
@@ -30,12 +31,16 @@ export function PrettyNumber({
   value,
   decimals,
   prefix,
-  suffix
+  suffix,
+  strong,
+  hiddenIfZero
 }: {
   value: number;
   decimals?: number;
   prefix?: string;
   suffix?: string;
+  strong?: boolean;
+  hiddenIfZero?: boolean;
 }) {
   const [highlight, setHighlight] = useState(false);
 
@@ -50,7 +55,9 @@ export function PrettyNumber({
     };
   }, [formatted]);
 
-  return (
+  if (hiddenIfZero && formatted === '0') return undefined;
+
+  const content = (
     <span
       className={cn(
         'whitespace-nowrap rounded-md px-1 transition-colors',
@@ -64,4 +71,7 @@ export function PrettyNumber({
       {suffix}
     </span>
   );
+
+  if (strong) return <Strong>{content}</Strong>;
+  return content;
 }

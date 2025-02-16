@@ -7,6 +7,26 @@ import {
 } from 'react';
 import { Spinner } from '../Spinner';
 
+export function ToggleButtons({
+  items
+}: {
+  items: { label: string; onClick?: () => void; isActive?: boolean }[];
+}) {
+  return (
+    <div className="buttons">
+      {items.map(item => (
+        <button
+          className={item.isActive ? 'active' : ''}
+          onClick={item.onClick}
+          tabIndex={-1}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function Button({
   children,
 
