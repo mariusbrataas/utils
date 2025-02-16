@@ -9,12 +9,11 @@ import { round } from '@/lib/utils';
 import { IoMdTrash } from 'react-icons/io';
 
 const DEFAULT_VALUES = {
-  entry: 2.8249,
-  takeProfit: 2.6643,
-  stopLoss: 2.8494,
+  entry: 193.67,
+  takeProfit: 190.98,
+  stopLoss: 193.94,
   capital: 1000,
-  risk: 100,
-  riskPercent: 10,
+  riskPercent: 5,
   maxLeverage: 100
 };
 
@@ -73,7 +72,7 @@ export default function PositionSizing() {
     ? capital *
       ((riskState == null ? DEFAULT_VALUES.riskPercent : riskState) / 100)
     : riskState == null
-      ? DEFAULT_VALUES.risk
+      ? (DEFAULT_VALUES.riskPercent / 100) * capital
       : riskState;
   const riskPercent = (riskAmount / capital) * 100;
   const riskUnit = Math.abs(entry - stopLoss);
@@ -97,12 +96,6 @@ export default function PositionSizing() {
   const potentialWin = Math.abs(positionSize * (takeProfit - entry));
   const riskRewardRatio = Math.abs(takeProfit - entry) / riskUnit;
 
-  /**
-   * Unleveraged position calculations
-   */
-  const unleveragedSize = Math.min(computedPositionSize, capital / entry);
-  const unleveragedValue = unleveragedSize * entry;
-
   return (
     <div className="flex w-[600px] max-w-full flex-col items-start justify-between gap-7 text-left">
       <h2>Position sizing</h2>
@@ -110,132 +103,124 @@ export default function PositionSizing() {
       {/* Input Section */}
       <div className="flex w-full flex-col gap-4">
         {/* Capital and Risk Inputs */}
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-row flex-wrap gap-2">
-            <Input
-              type="number"
-              label="Capital"
-              prefix="$"
-              placeholder={DEFAULT_VALUES.capital}
-              value={capitalState}
-              onChange={setCapital}
-              min={0}
-              max={100e6}
-            />
-            <Input
-              type="number"
-              label="Risk amount"
-              prefix={
-                <div className="px-1 py-1" tabIndex={-1}>
-                  <PopoverButton
-                    title={riskIsPercent ? '%' : '$'}
-                    closeOnPopoverClick
-                  >
-                    <div className="flex flex-col gap-1 p-1">
-                      <Button
-                        size="sm"
-                        {...(riskIsPercent
-                          ? { outline: true }
-                          : { filled: true })}
-                        onClick={() => {
-                          if (riskIsPercent) {
-                            setRiskIsPercent(undefined);
-                            setRisk(riskAmount);
-                          }
-                        }}
-                        tabIndex={-1}
-                      >
-                        $
-                      </Button>
-                      <Button
-                        size="sm"
-                        {...(!riskIsPercent
-                          ? { outline: true }
-                          : { filled: true })}
-                        onClick={() => {
-                          if (!riskIsPercent) {
-                            setRiskIsPercent(true);
-                            setRisk(riskPercent);
-                          }
-                        }}
-                        tabIndex={-1}
-                      >
-                        %
-                      </Button>
-                    </div>
-                  </PopoverButton>
-                </div>
-              }
-              placeholder={
-                riskIsPercent ? DEFAULT_VALUES.riskPercent : DEFAULT_VALUES.risk
-              }
-              value={riskState}
-              onChange={setRisk}
-              min={0}
-              max={capital}
-              status={
-                riskIsPercent
-                  ? `≈ $${formatNumber(riskAmount)}`
-                  : `≈ %${formatNumber(riskPercent)}`
-              }
-            />
-          </div>
-        </div>
-
-        {/* Price Inputs */}
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-row flex-wrap gap-2">
-            <Input
-              type="number"
-              label="Entry price"
-              prefix="$"
-              placeholder={DEFAULT_VALUES.entry}
-              value={entryState}
-              onChange={setEntry}
-              min={0}
-              max={100e6}
-            />
-            <Input
-              type="number"
-              label="Stop-loss"
-              prefix="$"
-              placeholder={DEFAULT_VALUES.stopLoss}
-              value={stopLossState}
-              onChange={setStopLoss}
-              min={0}
-              max={100e6}
-            />
-          </div>
-          <div className="flex flex-row flex-wrap gap-2">
-            <Input
-              type="number"
-              label="Take profit"
-              prefix="$"
-              placeholder={DEFAULT_VALUES.takeProfit}
-              value={takeProfitState}
-              onChange={setTakeProfit}
-              status={`Price change ≈ ${round(Math.abs(((takeProfit - entry) / entry) * 100), 2)}%`}
-              min={0}
-              max={100e6}
-            />
-            <Input
-              type="number"
-              label="Max leverage"
-              prefix="X"
-              placeholder={DEFAULT_VALUES.maxLeverage}
-              value={maxLeverage}
-              onChange={setMaxLeverage}
-              min={1}
-              step={0.1}
-            />
-          </div>
-
-          <Checkbox
-            label="Use discrete units for position size?"
-            checked={discrete}
-            onChange={setDiscrete}
+        <div className="grid grid-cols-2 gap-3">
+          <Input
+            type="number"
+            label="Capital"
+            prefix="$"
+            placeholder={DEFAULT_VALUES.capital}
+            value={capitalState}
+            onChange={setCapital}
+            min={0}
+            max={100e6}
+          />
+          <Input
+            type="number"
+            label="Risk amount"
+            prefix={
+              <div className="px-1 py-1" tabIndex={-1}>
+                <PopoverButton
+                  title={riskIsPercent ? '%' : '$'}
+                  closeOnPopoverClick
+                >
+                  <div className="flex flex-col gap-1 p-1">
+                    <Button
+                      size="sm"
+                      {...(riskIsPercent
+                        ? { outline: true }
+                        : { filled: true })}
+                      onClick={() => {
+                        if (riskIsPercent) {
+                          setRiskIsPercent(undefined);
+                          setRisk(riskState == null ? undefined : riskAmount);
+                        }
+                      }}
+                      tabIndex={-1}
+                    >
+                      $
+                    </Button>
+                    <Button
+                      size="sm"
+                      {...(!riskIsPercent
+                        ? { outline: true }
+                        : { filled: true })}
+                      onClick={() => {
+                        if (!riskIsPercent) {
+                          setRiskIsPercent(true);
+                          setRisk(riskState == null ? undefined : riskPercent);
+                        }
+                      }}
+                      tabIndex={-1}
+                    >
+                      %
+                    </Button>
+                  </div>
+                </PopoverButton>
+              </div>
+            }
+            placeholder={formatNumber(
+              riskIsPercent
+                ? DEFAULT_VALUES.riskPercent
+                : (DEFAULT_VALUES.riskPercent / 100) * capital
+            )}
+            value={riskState}
+            onChange={setRisk}
+            min={0}
+            max={capital}
+            status={
+              riskIsPercent
+                ? `≈ $${formatNumber(riskAmount)}`
+                : `≈ %${formatNumber(riskPercent)}`
+            }
+          />
+          <Input
+            type="number"
+            label="Entry price"
+            prefix="$"
+            placeholder={DEFAULT_VALUES.entry}
+            value={entryState}
+            onChange={setEntry}
+            min={0}
+            max={100e6}
+          />
+          <Input
+            type="number"
+            label="Stop-loss"
+            prefix="$"
+            placeholder={DEFAULT_VALUES.stopLoss}
+            value={stopLossState}
+            onChange={setStopLoss}
+            min={0}
+            max={100e6}
+          />
+          <Input
+            type="number"
+            label="Take profit"
+            prefix="$"
+            placeholder={DEFAULT_VALUES.takeProfit}
+            value={takeProfitState}
+            onChange={setTakeProfit}
+            status={`Price change ≈ ${round(Math.abs(((takeProfit - entry) / entry) * 100), 2)}%`}
+            min={0}
+            max={100e6}
+          />
+          <Input
+            type="number"
+            label="Max leverage"
+            prefix="X"
+            placeholder={DEFAULT_VALUES.maxLeverage}
+            value={maxLeverage}
+            onChange={setMaxLeverage}
+            min={1}
+            step={0.1}
           />
         </div>
+
+        <Checkbox
+          label="Use discrete units for position size?"
+          checked={discrete}
+          onChange={setDiscrete}
+        />
       </div>
 
       {/* Summary Section */}
@@ -275,9 +260,42 @@ export default function PositionSizing() {
 
       {/* Order Summary Section */}
       <div className="w-full">
-        <h3>Order summary</h3>
+        <h3>Position summary</h3>
         <div className="min-w-full overflow-auto" tabIndex={-1}>
           <Pairs
+            divide
+            data={[
+              {
+                label: 'Quantity',
+                content: (
+                  <Strong>
+                    <PrettyNumber value={positionSize} />
+                  </Strong>
+                )
+              },
+              {
+                label: 'Leverage',
+                content: (
+                  <Strong>
+                    <PrettyNumber
+                      value={positionValue / capital}
+                      decimals={2}
+                      suffix="X"
+                    />
+                  </Strong>
+                )
+              },
+              {
+                label: 'Value',
+                content: (
+                  <Strong>
+                    <PrettyNumber value={positionValue} prefix="$" />
+                  </Strong>
+                )
+              }
+            ]}
+          />
+          {/* <Pairs
             divide
             data={[
               {
@@ -331,7 +349,7 @@ export default function PositionSizing() {
                 )
               }
             ]}
-          />
+          /> */}
         </div>
       </div>
 
